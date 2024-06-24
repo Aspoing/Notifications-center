@@ -2,13 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { SafeAreaView, StyleSheet, View, Text, Pressable, Modal } from 'react-native';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { getToken, setToken, getNotifications } from './storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import ModalContent from './ModalContent';
+import SubPopUp from './SubPopUp';
+import ButtonPrimary from './ButtonPrimary';
+import ButtonSecondary from './ButtonSecondary';
+import ButtonTertiary from './ButtonTertiary';
 
 const HomeScreen = () => {
   const [token, setTokenState] = useState(0);
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const [isModalVisible, setModalVisible] = useState(false);
+  const [isSubPopUpVisible, setSubPopUpVisible] = useState(false);
   const [hasUnseenNotifications, setHasUnseenNotifications] = useState(false);
 
   useEffect(() => {
@@ -40,32 +46,46 @@ const HomeScreen = () => {
     await setToken(newToken);
   };
 
+  const handleClearStorage = async () => {
+    try {
+      await AsyncStorage.clear();
+      setTokenState(0);
+      setHasUnseenNotifications(false);
+    } catch (error) {
+      console.error('Error clearing AsyncStorage:', error);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.tokenContainer}>
-        <Pressable onPress={handleDecreaseToken} style={styles.tokenButton}>
-          <Text style={styles.tokenButtonText}>-</Text>
-        </Pressable>
+        <ButtonPrimary onPress={handleDecreaseToken} text="-" />
         <Text style={styles.tokenText}>{token}</Text>
-        <Pressable onPress={handleIncreaseToken} style={styles.tokenButton}>
-          <Text style={styles.tokenButtonText}>+</Text>
-        </Pressable>
+        <ButtonPrimary onPress={handleIncreaseToken} text="+" />
       </View>
       <View style={styles.buttonContainer}>
-        <Pressable onPress={() => navigation.navigate('BeforeTraject')} style={styles.button}>
-          <Text style={styles.buttonText}>Press me</Text>
-        </Pressable>
+        <ButtonPrimary onPress={() => navigation.navigate('BeforeTraject')} text="Press me" />
+        <ButtonPrimary onPress={handleClearStorage} text="Clear Storage" style={styles.clearButton} />
       </View>
       <Pressable onPress={() => setModalVisible(true)} style={styles.notificationButton}>
         <Text style={styles.notificationButtonText}>Show Notifications</Text>
         {hasUnseenNotifications && <View style={styles.unseenIndicator} />}
       </Pressable>
+      <ButtonTertiary onPress={() => setSubPopUpVisible(true)} text="Open SubPopUp" style={styles.subPopUpButton} />
       <Modal
         visible={isModalVisible}
         animationType="slide"
         onRequestClose={() => setModalVisible(false)}
       >
         <ModalContent onClose={() => setModalVisible(false)} />
+      </Modal>
+      <Modal
+        visible={isSubPopUpVisible}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setSubPopUpVisible(false)}
+      >
+        <SubPopUp onClose={() => setSubPopUpVisible(false)} />
       </Modal>
     </SafeAreaView>
   );
@@ -82,33 +102,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
-  tokenButton: {
-    backgroundColor: '#841584',
-    padding: 10,
-    borderRadius: 5,
-  },
-  tokenButtonText: {
-    color: 'white',
-    fontSize: 20,
-  },
   tokenText: {
     fontSize: 24,
     marginHorizontal: 20,
   },
   buttonContainer: {
+    flexDirection: 'row',
     marginBottom: 20,
-  },
-  button: {
-    backgroundColor: '#841584',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
   },
   notificationButton: {
     marginTop: 20,
@@ -133,7 +133,12 @@ const styles = StyleSheet.create({
     top: 5,
     right: 5,
   },
+  subPopUpButton: {
+    marginTop: 20,
+  },
+  clearButton: {
+    backgroundColor: '#ff5733',
+  },
 });
 
 export default HomeScreen;
- 

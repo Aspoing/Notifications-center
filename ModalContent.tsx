@@ -1,160 +1,126 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, FlatList } from 'react-native';
-import { getNotifications, setNotifications } from './storage';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import ButtonPrimary from './ButtonPrimary';
 
 const ModalContent = ({ onClose }) => {
-  const [notifications, setNotificationsState] = useState([]);
-  const [selectedNotification, setSelectedNotification] = useState(null);
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     const fetchNotifications = async () => {
       const storedNotifications = await getNotifications();
-      setNotificationsState(storedNotifications);
+      setNotifications(storedNotifications);
     };
     fetchNotifications();
   }, []);
 
-  const handleDeleteNotification = async (index) => {
-    const newNotifications = notifications.filter((_, i) => i !== index);
-    setNotificationsState(newNotifications);
-    await setNotifications(newNotifications);
+  const handlePressNotification = (id) => {
+    const updatedNotifications = notifications.map(notification =>
+      notification.id === id ? { ...notification, status: 'vu' } : notification
+    );
+    setNotifications(updatedNotifications);
+    updateNotifications(updatedNotifications);
   };
-
-  const handleSelectNotification = async (notification, index) => {
-    const updatedNotifications = [...notifications];
-    updatedNotifications[index].status = 'vu';
-    setNotificationsState(updatedNotifications);
-    await setNotifications(updatedNotifications);
-    setSelectedNotification(notification);
-  };
-
-  const handleBackToList = () => {
-    setSelectedNotification(null);
-  };
-
-  const renderNotification = ({ item, index }) => (
-    <View style={[styles.notification, item.status === 'vu' && styles.notificationSeen]}>
-      <Text style={styles.notificationText}>{item.title}</Text>
-      <Pressable onPress={() => handleSelectNotification(item, index)} style={styles.notificationDetailButton}>
-        <Text style={styles.notificationDetailButtonText}>View</Text>
-      </Pressable>
-      <Pressable onPress={() => handleDeleteNotification(index)} style={styles.notificationDeleteButton}>
-        <Text style={styles.notificationDeleteButtonText}>X</Text>
-      </Pressable>
-    </View>
-  );
 
   return (
-    <View style={styles.modalContent}>
-      {selectedNotification ? (
-        <View style={styles.notificationDetail}>
-          <Text style={styles.notificationTitle}>{selectedNotification.title}</Text>
-          <Text style={styles.notificationContent}>{selectedNotification.content}</Text>
-          <Pressable onPress={handleBackToList} style={styles.backButton}>
-            <Text style={styles.backButtonText}>Back to Notifications</Text>
-          </Pressable>
-        </View>
-      ) : (
-        <>
-          <View style={styles.topBar}>
-            <Text style={styles.topBarTitle}>Notifications</Text>
-            <Pressable onPress={onClose} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>X</Text>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Notifications</Text>
+        <ButtonPrimary onPress={onClose} text="Close" />
+      </View>
+      <ScrollView>
+        {notifications.map((notification) => (
+          <Pressable
+            key={notification.id}
+            onPress={() => handlePressNotification(notification.id)}
+            style={[styles.notification, notification.status === 'vu' && styles.seenNotification]}
+          >
+            <Text style={styles.notificationTitle}>{notification.title}</Text>
+            <Text style={styles.notificationContent}>{notification.content}</Text>
+            <Pressable
+              style={styles.deleteButton}
+              onPress={() => deleteNotification(notification.id)}
+            >
+              <Text style={styles.deleteButtonText}>X</Text>
             </Pressable>
-          </View>
-          <FlatList
-            data={notifications}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={renderNotification}
-          />
-        </>
-      )}
+          </Pressable>
+        ))}
+      </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  modalContent: {
+  container: {
     flex: 1,
-    backgroundColor: 'white',
     padding: 20,
   },
-  topBar: {
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 20,
   },
-  topBarTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    flex: 1,
-  },
-  closeButton: {
-    padding: 5,
-  },
-  closeButtonText: {
-    fontSize: 18,
+  headerText: {
+    fontSize: 24,
     fontWeight: 'bold',
   },
   notification: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    backgroundColor: '#FFDE59',
+    padding: 20,
+    borderRadius: 10,
     marginBottom: 10,
-    backgroundColor: '#f9f9f9',
-    padding: 10,
-    borderRadius: 5,
+    position: 'relative',
   },
-  notificationSeen: {
-    backgroundColor: '#e0e0e0',
-  },
-  notificationText: {
-    flex: 1,
-  },
-  notificationDetailButton: {
-    marginLeft: 10,
-    padding: 5,
-    backgroundColor: '#841584',
-    borderRadius: 5,
-  },
-  notificationDetailButtonText: {
-    color: 'white',
-  },
-  notificationDeleteButton: {
-    marginLeft: 10,
-    padding: 5,
-    backgroundColor: '#841584',
-    borderRadius: 5,
-  },
-  notificationDeleteButtonText: {
-    color: 'white',
-  },
-  notificationDetail: {
-    alignItems: 'center',
+  seenNotification: {
+    backgroundColor: '#D3D3D3',
   },
   notificationTitle: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 5,
   },
   notificationContent: {
     fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 20,
   },
-  backButton: {
-    backgroundColor: '#841584',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
+  deleteButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    padding: 5,
   },
-  backButtonText: {
-    color: 'white',
+  deleteButtonText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    color: 'red',
   },
 });
+
+const getNotifications = async () => {
+  try {
+    const notifications = await AsyncStorage.getItem('notifications');
+    return notifications ? JSON.parse(notifications) : [];
+  } catch (error) {
+    console.error('Error getting notifications from AsyncStorage:', error);
+    return [];
+  }
+};
+
+const updateNotifications = async (notifications) => {
+  try {
+    await AsyncStorage.setItem('notifications', JSON.stringify(notifications));
+  } catch (error) {
+    console.error('Error updating notifications in AsyncStorage:', error);
+  }
+};
+
+const deleteNotification = async (id) => {
+  try {
+    const notifications = await getNotifications();
+    const updatedNotifications = notifications.filter(notification => notification.id !== id);
+    await AsyncStorage.setItem('notifications', JSON.stringify(updatedNotifications));
+  } catch (error) {
+    console.error('Error deleting notification from AsyncStorage:', error);
+  }
+};
 
 export default ModalContent;

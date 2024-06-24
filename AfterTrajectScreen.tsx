@@ -1,25 +1,21 @@
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, View, Text, Pressable, TextInput } from 'react-native';
+import { SafeAreaView, StyleSheet, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { getNotifications, setNotifications } from './storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import ButtonPrimary from './ButtonPrimary';
 
 const AfterTrajectScreen = () => {
+  const navigation = useNavigation();
   const [somnolence, setSomnolence] = useState('10 sec');
   const [distance, setDistance] = useState('2 km');
   const [pause, setPause] = useState('1');
-  const [bpm, setBpm] = useState('74');
-  const navigation = useNavigation();
+  const [moyenneBpm, setMoyenneBpm] = useState('74');
 
-  const handleNavigateHome = async () => {
-    const newNotification = {
-      title: 'Rapport de trajet',
-      content: `Tu as fini un trajet ! Tu as somnolé pendant ${somnolence}, parcouru ${distance} et pris ${pause} pauses ! Nous avons relevé une moyenne de BPM à ${bpm}`,
-      status: 'non vu'
-    };
-    const currentNotifications = await getNotifications();
-    const updatedNotifications = [...currentNotifications, newNotification];
-    await setNotifications(updatedNotifications);
-
+  const handlePress = async () => {
+    await createNotification(
+      'Rapport de trajet',
+      `Tu as fini un trajet ! Tu as somnolé pendant ${somnolence}, parcouru ${distance} et pris ${pause} pauses ! Nous avons relevé une moyenne de BPM à ${moyenneBpm}`
+    );
     navigation.navigate('Home');
   };
 
@@ -46,14 +42,10 @@ const AfterTrajectScreen = () => {
       <TextInput
         style={styles.input}
         placeholder="Moyenne BPM"
-        value={bpm}
-        onChangeText={setBpm}
+        value={moyenneBpm}
+        onChangeText={setMoyenneBpm}
       />
-      <View style={styles.buttonContainer}>
-        <Pressable onPress={handleNavigateHome} style={styles.button}>
-          <Text style={styles.buttonText}>Back to Home</Text>
-        </Pressable>
-      </View>
+      <ButtonPrimary onPress={handlePress} text="Back to Home" />
     </SafeAreaView>
   );
 };
@@ -63,31 +55,32 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
   },
   input: {
-    width: '80%',
-    height: 40,
-    borderColor: '#841584',
+    width: '100%',
+    padding: 10,
     borderWidth: 1,
+    borderColor: '#ccc',
     borderRadius: 5,
-    paddingHorizontal: 10,
-    marginVertical: 5,
-  },
-  buttonContainer: {
-    marginTop: 20,
-  },
-  button: {
-    backgroundColor: '#841584',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    marginBottom: 10,
   },
 });
+
+const createNotification = async (title, content) => {
+  try {
+    const notifications = JSON.parse(await AsyncStorage.getItem('notifications')) || [];
+    const newNotification = {
+      id: Date.now().toString(),
+      title,
+      content,
+      status: 'non vu',
+    };
+    notifications.push(newNotification);
+    await AsyncStorage.setItem('notifications', JSON.stringify(notifications));
+  } catch (error) {
+    console.error('Error creating notification:', error);
+  }
+};
 
 export default AfterTrajectScreen;
