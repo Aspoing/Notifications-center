@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "937759837279",
+    "project_id": "notification-center-eip",
+    "storage_bucket": "notification-center-eip.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:937759837279:android:6bad1000980b2920951fea",
+        "android_client_info": {
+          "package_name": "com.example.firebasesetup"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAP54YMH2QaeFk-Om42ZwrgNquMm__Wrz0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
