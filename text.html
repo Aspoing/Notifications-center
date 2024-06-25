@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compte Validé</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #00275B;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 50px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .container h1 {
+            color: #00275B;
+            margin-bottom: 20px;
+        }
+        .container p {
+            color: #555;
+            margin-bottom: 30px;
+        }
+        .button {
+            background-color: #FFDE59;
+            color: #00275B;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #e6c24b;
+        }
+    </style>
+    <script>
+        function closePage() {
+            window.close();
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Compte Validé</h1>
+        <p>Merci d'avoir confirmé votre adresse e-mail. Votre compte est maintenant activé.</p>
+        <button class="button" onclick="closePage()">Fermer la page</button>
+    </div>
+</body>
+</html>
